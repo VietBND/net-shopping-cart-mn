@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>shopping_cart.application</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Auth\Commands\" />
+    <Folder Include="MapperConfigurations\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="10.4.0" />
+    <PackageReference Include="MediatR" Version="10.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.16.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\shopping-cart-infrastructures\shopping-cart-infrastructures.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="VietBND">
+      <HintPath>..\framework-output\VietBND.dll</HintPath>
+    </Reference>
+    <Reference Include="VietBND.AspNetCore">
+      <HintPath>..\framework-output\VietBND.AspNetCore.dll</HintPath>
+    </Reference>
+    <Reference Include="VietBND.MediatR">
+      <HintPath>..\framework-output\VietBND.MediatR.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
