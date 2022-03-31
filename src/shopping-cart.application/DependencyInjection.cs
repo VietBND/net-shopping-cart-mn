@@ -14,6 +14,7 @@ namespace shopping_cart.application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
+            services.AddScoped<ICurrentContext,CurrentContext>();
             return services;
         }
     }

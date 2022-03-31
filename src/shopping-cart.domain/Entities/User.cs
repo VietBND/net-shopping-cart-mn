@@ -19,6 +19,6 @@ namespace shopping_cart.domain.Entities
         public string Salt { get; set; }
         public string Name { get; set; }
         public string? Email { get; set; }
-        public virtual ICollection<UserRoleMapping> UserRoleMappings { get; set; }
+        public ICollection<UserRoleMapping> UserRoleMappings { get; set; }
     }
 }

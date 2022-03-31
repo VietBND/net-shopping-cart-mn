@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using shopping_cart.domain.Common;
+using shopping_cart.domain.Entities;
 using shopping_cart_infrastructures.DapperRepositories;
 using shopping_cart_infrastructures.DapperRepositories.Dto;
 using System;
@@ -13,6 +15,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using VietBND.AspNetCore.Exceptions;
+using VietBND.Domain.Repositories;
+using VietBND.Domain.Uow;
 using VietBND.MediatR.Queries;
 
 namespace shopping_cart.application.Auth.Queries
@@ -28,12 +32,22 @@ namespace shopping_cart.application.Auth.Queries
         private readonly IConfiguration _configuration;
         private readonly IUserRepository _userRepository;
         private readonly IHttpContextAccessor _contextAccessor;
-
-        public AuthQueriesHandler(IUserRepository userRepository, IConfiguration configuration, IHttpContextAccessor contextAccessor)
+        private readonly IRepository<RefreshToken,Guid> _refreshTokenRepository;
+        private readonly ICurrentContext _currentContext;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+        public AuthQueriesHandler(IUserRepository userRepository,
+            IConfiguration configuration,
+            IHttpContextAccessor contextAccessor,
+            IRepository<RefreshToken, Guid> refreshTokenRepository, IMapper mapper, IUnitOfWork unitOfWork, ICurrentContext currentContext)
         {
             _userRepository = userRepository;
             _configuration = configuration;
             _contextAccessor = contextAccessor;
+            _refreshTokenRepository = refreshTokenRepository;
+            _mapper = mapper;
+            _unitOfWork = unitOfWork;
+            _currentContext = currentContext;
         }
 
         public async Task<AccountLoginSuccessDto> Handle(AccountLoginQueries request, CancellationToken cancellationToken)
@@ -46,11 +60,13 @@ namespace shopping_cart.application.Auth.Queries
                 throw new BadRequestException("PASSWORD_IS_WRONG");
             }
             var token = generateJwtToken(user);
-            var refreshToken = generateRefreshToken(ipAddress());
+            var refreshToken = generateRefreshToken(user,ipAddress());
             setTokenCookie(refreshToken.Token);
             return new AccountLoginSuccessDto()
-            {
-                Toke
+            { 
+                AccessToken = token,
+                Name = user.Name,
+                UserId = user.Id
             };
         }
 
@@ -79,29 +95,34 @@ namespace shopping_cart.application.Auth.Queries
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha512Signature),
-                Subject = new System.Security.Claims.ClaimsIdentity(new[] { 
-                    new Claim("Username", $"{user.Username}"), 
-                    new Claim("UserId", user.Id.ToString()) 
+                Subject = new System.Security.Claims.ClaimsIdentity(new[] {
+                    new Claim("Username", $"{user.Username}"),
+                    new Claim("UserId", user.Id.ToString())
                 }),
-                Expires = DateTime.UtcNow.AddDays(1)
+                Expires = DateTime.UtcNow.AddSeconds(45)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
 
-        private RefreshTokenDto generateRefreshToken(string ipAddress)
+        private RefreshTokenDto generateRefreshToken(UserDto user,string ipAddress)
         {
             using (var rngCryptoServiceProvider = new RSACryptoServiceProvider())
             {
                 var randomBytes = new byte[64];
                 rngCryptoServiceProvider.EncryptValue(randomBytes);
-                return new RefreshTokenDto
+                var dto = new RefreshTokenDto
                 {
                     Token = Convert.ToBase64String(randomBytes),
                     Expires = DateTime.UtcNow.AddDays(7),
                     CreatedAt = DateTime.UtcNow,
+                    UserId = user.Id,
                     CreatedByIp = ipAddress
                 };
+                var entity = _mapper.Map<RefreshToken>(dto);
+                _refreshTokenRepository.Insert(entity);
+                _unitOfWork.SaveChange();
+                return dto;
             }
         }
 

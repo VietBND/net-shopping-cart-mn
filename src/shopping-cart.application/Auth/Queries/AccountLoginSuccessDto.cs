@@ -10,6 +10,6 @@ namespace shopping_cart.application.Auth.Queries
     {
         public string AccessToken { get; set; }
         public string Name { get; set; }
-        public string UserId { get; set; }
+        public long UserId { get; set; }
     }
 }

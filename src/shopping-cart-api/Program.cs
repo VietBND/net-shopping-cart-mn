@@ -1,10 +1,12 @@
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Serilog;
 using shopping_cart.application;
+using shopping_cart_infrastructures;
 using System.Reflection;
 using System.Text;
 using VietBND.AspNetCore.Extensions;
@@ -13,7 +15,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddApplication();
+builder.Services.AddInfrastructures();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddAutoMapper(Assembly.Load("shopping-cart.application"));
 builder.Services.AddControllers();
+builder.Services.AddDbContext<shopping_cart_infrastructures.ShoppingCartDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
+});
 builder.Services.AddMediatR(Assembly.Load("shopping-cart.application"));
 builder.Services.AddAuthentication(x =>
 {

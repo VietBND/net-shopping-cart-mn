@@ -17,7 +17,8 @@ namespace shopping_cart.domain.Entities
         }
         public string Name { get; set; }
         public bool IsActive { get; set; }
-        public virtual ICollection<UserRoleMapping> UserRoleMappings { get; set; }
-        public virtual ICollection<RolePermissionMapping> RolePermissionMappings { get; set; }
+        public bool IsAdmin { get; set; }
+        public ICollection<UserRoleMapping> UserRoleMappings { get; set; }
+        public ICollection<RolePermissionMapping> RolePermissionMappings { get; set; }
     }
 }

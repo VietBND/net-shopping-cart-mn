@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CsvHelper.Configuration.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,6 +18,6 @@ namespace shopping_cart.domain.Entities
         public string Key { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public virtual ICollection<RolePermissionMapping> RolePermissionMappings { get; set; }
+        public ICollection<RolePermissionMapping> RolePermissionMappings { get; set; }
     }
 }
